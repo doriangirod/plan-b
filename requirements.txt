@@ -2,3 +2,4 @@ streamlit>=1.40
 requests
 pandas
 altair
+pymupdf

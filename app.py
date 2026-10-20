@@ -5,8 +5,10 @@ Le calcul est dans model.py.
 """
 from datetime import date, timedelta
 import math
+from pathlib import Path
 
 import altair as alt
+import pymupdf
 import pandas as pd
 import requests
 import streamlit as st
@@ -274,17 +276,35 @@ if math.isfinite(r["p_star"]) and r["p_star"] <= 1:
 st.altair_chart(alt.layer(band, bars, *lines).properties(height=280), width="stretch")
 st.caption(T["chart_caption"])
 
-# ---------------------------------------------------------------- méthode
-with st.expander(T["method"], expanded=False):
-    st.markdown(T["m1"])
-    st.latex(r"\hat p = \frac{k}{n}")
-    st.markdown(T["m1b"])
-    st.markdown(T["m2"])
-    st.latex(r"p = w(h)\,p_f + \bigl(1-w(h)\bigr)\,\hat p, \qquad w(h) = \max\!\left(0,\ 1 - \tfrac{h}{16}\right)")
-    st.markdown(T["m3"])
-    st.latex(r"p > p^\ast = \frac{C}{\lambda R}")
-    st.markdown(T["m3b"])
-    st.markdown(T["limits"])
+# ---------------------------------------------------------------- méthode : uniquement dans le PDF
+PDF_PATH = Path(__file__).parent / "rain-model.pdf"
+DOC = {
+    "fr": dict(btn="📄 Méthodologie", title="Méthodologie du modèle",
+               dl="Télécharger le PDF", note="Document en anglais."),
+    "en": dict(btn="📄 Methodology", title="Model methodology",
+               dl="Download the PDF", note=""),
+}[lang]
+
+
+@st.cache_data(show_spinner=False)
+def pdf_pages(path: str, mtime: float) -> list:
+    """Rend chaque page du PDF en image PNG (mtime sert à invalider le cache si le PDF change)."""
+    with pymupdf.open(path) as doc:
+        return [page.get_pixmap(dpi=150).tobytes("png") for page in doc]
+
+
+@st.dialog(DOC["title"], width="large")
+def show_methodology():
+    if DOC["note"]:
+        st.caption(DOC["note"])
+    st.download_button(DOC["dl"], PDF_PATH.read_bytes(), file_name="rain-model.pdf",
+                       mime="application/pdf", type="primary")
+    for png in pdf_pages(str(PDF_PATH), PDF_PATH.stat().st_mtime):
+        st.image(png, width="stretch")
+
 
 st.divider()
-st.caption(T["footer"])
+foot_l, foot_r = st.columns([4, 1], vertical_alignment="center")
+foot_l.caption(T["footer"])
+if PDF_PATH.exists() and foot_r.button(DOC["btn"], width="stretch"):
+    show_methodology()
