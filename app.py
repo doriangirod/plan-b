@@ -285,11 +285,6 @@ with st.expander(T["method"], expanded=False):
     st.latex(r"p > p^\ast = \frac{C}{\lambda R}")
     st.markdown(T["m3b"])
     st.markdown(T["limits"])
-    from pathlib import Path
-    pdf = Path(__file__).parent / "rain-model.pdf"
-    if pdf.exists():
-        st.download_button(
-            "📄 Note méthodologique (PDF, en anglais)" if lang == "fr" else "📄 Methodology note (PDF)",
-            pdf.read_bytes(), file_name="rain-model.pdf", mime="application/pdf")
+
 st.divider()
 st.caption(T["footer"])
