@@ -1,5 +1,5 @@
 """
-Météorisque — interface Streamlit (FR / EN).
+Plan B - Weather Risk — interface Streamlit (FR / EN).
 Lancer en local :  streamlit run app.py
 Le calcul est dans model.py.
 """
@@ -13,7 +13,7 @@ import streamlit as st
 
 import model
 
-st.set_page_config(page_title="Météorisque", page_icon="🌧️", layout="wide")
+st.set_page_config(page_title="Plan B - Weather Risk", page_icon="🌧️", layout="wide")
 
 N_YEARS = 30
 Y1 = date.today().year - 1          # dernière année complète
@@ -120,9 +120,9 @@ TXT = {
 }
 
 # ---------------------------------------------------------------- langue (une URL par langue : ?lang=fr / ?lang=en)
-lang = st.query_params.get("lang", "fr")
+lang = st.query_params.get("lang", "en")
 if lang not in TXT:
-    lang = "fr"
+    lang = "en"
 T = TXT[lang]
 
 head_l, head_r = st.columns([5, 1])
@@ -134,7 +134,7 @@ with head_r:
         st.rerun()
 with head_l:
     st.caption(T["eyebrow"].upper())
-    st.title("Météorisque")
+    st.title("Plan B - Weather Risk")
     st.write(T["lede"])
 
 
