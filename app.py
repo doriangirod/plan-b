@@ -13,7 +13,7 @@ import streamlit as st
 
 import model
 
-st.set_page_config(page_title="Plan B - Weather Risk", page_icon="🌧️", layout="wide")
+st.set_page_config(page_title="Weather Risk Management", page_icon="🌧️", layout="wide")
 
 N_YEARS = 30
 Y1 = date.today().year - 1          # dernière année complète
