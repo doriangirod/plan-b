@@ -75,18 +75,18 @@
         <div class="fig"><span class="k">Expected loss</span><span class="v" id="fe">—</span><span class="s" id="fes"></span></div>
         <div class="fig"><span class="k">Decision threshold</span><span class="v" id="fs">—</span><span class="s" id="fss"></span></div>
       </div>
+      <section class="card chartcard">
+        <h3>Historical rain frequency around the date</h3>
+        <div class="legend">
+          <span><i style="border-color:var(--ink)"></i>estimated probability</span>
+          <span><i style="border-color:var(--bad);border-top-style:dashed"></i>decision threshold</span>
+          <span>Shaded area: window used for the estimate</span>
+        </div>
+        <div class="chartbox"><svg id="chart" viewBox="0 0 760 140" role="img" aria-label="Daily rain frequency around the event date"></svg></div>
+      </section>
     </div>
   </div>
 
-  <section class="card">
-    <h3>Historical rain frequency around the date</h3>
-    <div class="legend">
-      <span><i style="border-color:var(--ink)"></i>estimated probability</span>
-      <span><i style="border-color:var(--bad);border-top-style:dashed"></i>decision threshold</span>
-      <span>Shaded area: window used for the estimate</span>
-    </div>
-    <div class="chartbox"><svg id="chart" viewBox="0 0 760 260" role="img" aria-label="Daily rain frequency around the event date"></svg></div>
-  </section>
 
   <footer>
     <p>Weather data: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (ERA5 reanalysis and forecast models). Decision-support tool, provided without warranty.</p>

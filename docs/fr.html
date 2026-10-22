@@ -75,18 +75,18 @@
         <div class="fig"><span class="k">Perte attendue</span><span class="v" id="fe">—</span><span class="s" id="fes"></span></div>
         <div class="fig"><span class="k">Seuil de décision</span><span class="v" id="fs">—</span><span class="s" id="fss"></span></div>
       </div>
+      <section class="card chartcard">
+        <h3>Fréquence historique de pluie autour de la date</h3>
+        <div class="legend">
+          <span><i style="border-color:var(--ink)"></i>probabilité retenue</span>
+          <span><i style="border-color:var(--bad);border-top-style:dashed"></i>seuil de décision</span>
+          <span>Zone claire : fenêtre utilisée pour le calcul</span>
+        </div>
+        <div class="chartbox"><svg id="chart" viewBox="0 0 760 140" role="img" aria-label="Fréquence de pluie par jour autour de la date de l'événement"></svg></div>
+      </section>
     </div>
   </div>
 
-  <section class="card">
-    <h3>Fréquence historique de pluie autour de la date</h3>
-    <div class="legend">
-      <span><i style="border-color:var(--ink)"></i>probabilité retenue</span>
-      <span><i style="border-color:var(--bad);border-top-style:dashed"></i>seuil de décision</span>
-      <span>Zone claire : fenêtre utilisée pour le calcul</span>
-    </div>
-    <div class="chartbox"><svg id="chart" viewBox="0 0 760 260" role="img" aria-label="Fréquence de pluie par jour autour de la date de l'événement"></svg></div>
-  </section>
 
   <footer>
     <p>Données météo : <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (réanalyse ERA5 et modèles de prévision). Outil d'aide à la décision, sans garantie.</p>

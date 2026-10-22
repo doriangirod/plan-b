@@ -200,7 +200,7 @@ function renderVerdict(r, ctx) {
 
 function renderChart(profile, r, eventDate) {
   const svg = $('chart');
-  const W = 760, H = 260, m = { l: 44, r: 16, t: 14, b: 32 };
+  const W = 760, H = 140, m = { l: 44, r: 16, t: 10, b: 26 };
   const iw = W - m.l - m.r, ih = H - m.t - m.b;
   const maxF = Math.max(...profile.map(d => d.f), r.p, isFinite(r.pStar) ? Math.min(r.pStar, 1) : 0);
   const yMax = Math.min(1, Math.ceil((maxF + 0.05) * 10) / 10);
@@ -220,7 +220,7 @@ function renderChart(profile, r, eventDate) {
     s += `<rect class="bar${out}" x="${x(d.o) - bw / 2}" y="${y(d.f)}" width="${bw}" height="${Math.max(0, m.t + ih - y(d.f))}"><title>${dayLabel(addDays(eventDate, d.o))}: ${pct(d.f)}</title></rect>`;
   });
   [-30, -15, 0, 15, 30].filter(o => Math.abs(o) <= span).forEach(o => {
-    s += `<text x="${x(o)}" y="${H - 10}" text-anchor="middle">${o === 0 ? T.day0 : ''}${dayLabel(addDays(eventDate, o))}</text>`;
+    s += `<text x="${x(o)}" y="${H - 6}" text-anchor="middle">${o === 0 ? T.day0 : ''}${dayLabel(addDays(eventDate, o))}</text>`;
   });
   s += `<line class="pmean" x1="${m.l}" x2="${W - m.r}" y1="${y(r.p)}" y2="${y(r.p)}"/>`;
   s += `<text class="pmean-l" x="${W - m.r - 4}" y="${y(r.p) - 5}" text-anchor="end">p = ${pct(r.p)}</text>`;
