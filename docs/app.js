@@ -262,8 +262,9 @@ async function run(ev) {
     const r = computeRisk({ k, n, pf: fc ? fc.pf : null, h, R: ctx.R, lambda: ctx.lambda, C: ctx.C });
     renderVerdict(r, ctx);
     renderChart(dailyProfile(hist, M, D, ctx.thr, 30), r, eventDate);
-    const where = [loc.name, loc.admin1, loc.country].filter(Boolean).join(', ');
-    status.textContent = T.summary(where, dayLabel(eventDate), h, k, n) + (fc ? T.fcNote(Math.round(fc.pf * 100)) : '');
+    // Le résumé (lieu, date, nombre de jours de pluie, prévision) ira sur la page de détails :
+    // T.summary(where, dayLabel(eventDate), h, k, n) + T.fcNote(...)
+    status.textContent = '';
   } catch (e) {
     fail(e.message);
   } finally {
