@@ -26,7 +26,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-body)
 .wrap{max-width:1040px;margin:0 auto;display:grid;gap:18px}
 header{display:grid;gap:6px}
 .brand{font:600 1.9rem/1.15 var(--f-display);letter-spacing:-.01em;margin:0;text-wrap:balance}
-.lede{margin:0;color:var(--muted);max-width:62ch}
+.lede{margin:0;color:var(--muted)}
 .eyebrow{font:500 .72rem/1 var(--f-body);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
 
 .top{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:24px;align-items:stretch}
