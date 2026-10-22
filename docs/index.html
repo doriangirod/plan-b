@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Plan B - Weather Risk</title>
+<meta name="description" content="Chance of rain, expected loss and a clear protect / don't protect decision for your outdoor event.">
+<meta property="og:title" content="Plan B - Weather Risk">
+<meta property="og:description" content="Should you pay for a tent or rain insurance? 30 years of weather data and the current forecast give you the answer in CHF.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌧️</text></svg>">
+<link rel="alternate" hreflang="en" href="index.html">
+<link rel="alternate" hreflang="fr" href="fr.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="topbar">
+      <span class="eyebrow">Weather risk · outdoor events</span>
+      <nav class="lang" aria-label="Language">
+        <a href="index.html" lang="en" aria-current="page">EN</a>
+        <a href="fr.html" lang="fr">FR</a>
+      </nav>
+    </div>
+    <h1 class="brand">Plan B - Weather Risk</h1>
+    <p class="lede">Enter the location, the date and what rain would cost you. The tool estimates the chance of rain from 30 years of data and the current forecast, then tells you whether protection is worth its price.</p>
+  </header>
+
+  <div class="top">
+    <form id="f" novalidate>
+      <div class="field">
+        <label for="place">Location</label>
+        <input id="place" value="Zurich" autocomplete="off" required>
+        <small>Town name, without the country.</small>
+      </div>
+      <div class="field">
+        <label for="date">Event date</label>
+        <input id="date" type="date" required>
+      </div>
+      <div class="field">
+        <label for="rev">Expected revenue</label>
+        <div class="unit"><input id="rev" type="number" min="0" step="500" value="20000"><span>CHF</span></div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label for="lam">Loss if it rains</label>
+          <div class="unit"><input id="lam" type="number" min="0" max="100" step="5" value="60"><span>%</span></div>
+        </div>
+        <div class="field">
+          <label for="thr">Rain threshold</label>
+          <div class="unit"><input id="thr" type="number" min="0.1" step="0.5" value="2"><span>mm</span></div>
+        </div>
+      </div>
+      <div class="field">
+        <label for="cost">Cost of protection</label>
+        <div class="unit"><input id="cost" type="number" min="0" step="100" value="2500"><span>CHF</span></div>
+        <small>Tent, indoor fallback venue or cancellation insurance.</small>
+      </div>
+      <button id="go" type="submit">Assess the risk</button>
+    </form>
+
+    <div class="result">
+      <div class="status" id="status" role="status">Loading the example…</div>
+      <div class="verdict" id="verdict">
+        <span class="tag" id="vtag">—</span>
+        <h2 id="vtitle">Assessing</h2>
+        <p id="vtext"></p>
+      </div>
+      <div class="figs">
+        <div class="fig"><span class="k">Chance of rain</span><span class="v" id="fp">—</span><span class="s" id="fps"></span></div>
+        <div class="fig"><span class="k">Loss if it rains</span><span class="v" id="fl">—</span><span class="s" id="fls"></span></div>
+        <div class="fig"><span class="k">Expected loss</span><span class="v" id="fe">—</span><span class="s" id="fes"></span></div>
+        <div class="fig"><span class="k">Decision threshold</span><span class="v" id="fs">—</span><span class="s" id="fss"></span></div>
+      </div>
+    </div>
+  </div>
+
+  <section class="card">
+    <h3>Historical rain frequency around the date</h3>
+    <div class="legend">
+      <span><i style="border-color:var(--ink)"></i>estimated probability</span>
+      <span><i style="border-color:var(--bad);border-top-style:dashed"></i>decision threshold</span>
+      <span>Shaded area: window used for the estimate</span>
+    </div>
+    <div class="chartbox"><svg id="chart" viewBox="0 0 760 260" role="img" aria-label="Daily rain frequency around the event date"></svg></div>
+  </section>
+
+  <footer>
+    <p>Weather data: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (ERA5 reanalysis and forecast models). Decision-support tool, provided without warranty.</p>
+    <a class="docbtn" href="rain-model.pdf" target="_blank" rel="noopener">📄 Methodology (PDF)</a>
+  </footer>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

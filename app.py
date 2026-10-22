@@ -275,9 +275,9 @@ st.altair_chart(alt.layer(band, bars, *lines).properties(height=280), width="str
 st.caption(T["chart_caption"])
 
 # ---------------------------------------------------------------- méthode : uniquement dans le PDF
-# Le PDF est servi par Streamlit depuis le dossier static/ (voir .streamlit/config.toml)
+# Le PDF est publié avec le site statique (dossier docs/, GitHub Pages)
 # et s'ouvre dans un nouvel onglet avec le lecteur PDF du navigateur.
-PDF_URL = "app/static/rain-model.pdf"
+PDF_URL = "https://gordondiair.github.io/plan-b/rain-model.pdf"
 DOC_BTN = "📄 Méthodologie (PDF)" if lang == "fr" else "📄 Methodology (PDF)"
 
 st.divider()
