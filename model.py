@@ -1,3 +1,4 @@
+## salut
 """
 MODÈLE — ta partie.
 Tout le calcul statistique est ici. app.py ne fait qu'afficher.
