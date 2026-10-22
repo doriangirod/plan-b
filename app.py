@@ -277,7 +277,7 @@ st.caption(T["chart_caption"])
 # ---------------------------------------------------------------- méthode : uniquement dans le PDF
 # Le PDF est publié avec le site statique (dossier docs/, GitHub Pages)
 # et s'ouvre dans un nouvel onglet avec le lecteur PDF du navigateur.
-PDF_URL = "https://gordondiair.github.io/plan-b/rain-model.pdf"
+PDF_URL = "https://doriangirod.github.io/plan-b/rain-model.pdf"
 DOC_BTN = "📄 Méthodologie (PDF)" if lang == "fr" else "📄 Methodology (PDF)"
 
 st.divider()
