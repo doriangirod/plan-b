@@ -41,6 +41,7 @@ const T = {
     protCost: c => `protection : ${c}`,
     never: 'jamais rentable', above: 'protéger au-delà',
     day0: 'J · ',
+    busy: 'Le service météo est très sollicité en ce moment. Réessayez dans une minute.',
     placeHint: 'Nom de la commune ou code postal.', map: 'Voir sur la carte', west: 'O', postcode: 'NPA'
   },
   en: {
@@ -68,6 +69,7 @@ const T = {
     protCost: c => `protection: ${c}`,
     never: 'never pays off', above: 'protect above this',
     day0: 'D · ',
+    busy: 'The weather service is very busy right now. Please try again in a minute.',
     placeHint: 'Town name or postcode.', map: 'View on map', west: 'W', postcode: 'Postcode'
   }
 }[LANG];
@@ -88,6 +90,7 @@ const histCache = new Map();
 async function getJSON(url, what) {
   let r;
   try { r = await fetch(url); } catch (e) { throw new Error(T.netErr(what)); }
+  if (r.status === 429) throw new Error(T.busy);
   if (!r.ok) throw new Error(T.httpErr(what, r.status));
   return r.json();
 }
@@ -99,14 +102,27 @@ async function geocode(name) {
   return j.results[0];
 }
 
-async function fetchHistory(lat, lon) {
-  const key = `${lat.toFixed(3)},${lon.toFixed(3)}`;
+// Open-Meteo compte une requête de plus de 2 semaines comme plusieurs appels (au prorata de la durée).
+// 30 ans d'un bloc ≈ 780 appels ; 30 fenêtres de 15 jours ≈ 32 appels. On ne télécharge donc que
+// la fenêtre ±WINDOW_DAYS autour de la date, pour chaque année (mêmes jours que la climatologie).
+async function fetchHistory(lat, lon, month, day) {
+  const key = `${lat.toFixed(3)},${lon.toFixed(3)},${month},${day}`;
   if (histCache.has(key)) return histCache.get(key);
-  const u = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}` +
-            `&start_date=${Y0}-01-01&end_date=${Y1}-12-31&daily=precipitation_sum&timezone=Europe%2FZurich`;
-  const j = await getJSON(u, T.wHist);
+  const first = Date.UTC(Y0, 0, 1), last = Date.UTC(Y1, 11, 31);   // mêmes bornes qu'avant
+  const jobs = [];
+  for (let y = Y0; y <= Y1; y++) {
+    const c = new Date(Date.UTC(y, month, day));
+    const s = new Date(Math.max(+addDays(c, -WINDOW_DAYS), first));
+    const e = new Date(Math.min(+addDays(c, WINDOW_DAYS), last));
+    if (s > e) continue;
+    const u = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}` +
+              `&start_date=${iso(s)}&end_date=${iso(e)}&daily=precipitation_sum&timezone=Europe%2FZurich`;
+    jobs.push(getJSON(u, T.wHist));
+  }
   const m = new Map();
-  j.daily.time.forEach((t, i) => { const v = j.daily.precipitation_sum[i]; if (v != null) m.set(t, v); });
+  for (const j of await Promise.all(jobs)) {
+    j.daily.time.forEach((t, i) => { const v = j.daily.precipitation_sum[i]; if (v != null) m.set(t, v); });
+  }
   histCache.set(key, m);
   return m;
 }
@@ -289,16 +305,17 @@ async function run(ev) {
     loc = await geocode(ctx.place);
     renderPlace(loc);
     status.textContent = T.reading(N_YEARS, loc.name);
+    const M = eventDate.getUTCMonth(), D = eventDate.getUTCDate();
     const [hist, fc] = await Promise.all([
-      fetchHistory(loc.latitude, loc.longitude),
+      fetchHistory(loc.latitude, loc.longitude, M, D),
       h < FORECAST_DAYS ? fetchForecast(loc.latitude, loc.longitude, ctx.date).catch(() => null) : Promise.resolve(null)
     ]);
-    const M = eventDate.getUTCMonth(), D = eventDate.getUTCDate();
     const { k, n } = climatology(hist, M, D, ctx.thr, WINDOW_DAYS);
     if (n < 30) throw new Error(T.noData);
     const r = computeRisk({ k, n, pf: fc ? fc.pf : null, h, R: ctx.R, lambda: ctx.lambda, C: ctx.C });
     renderVerdict(r, ctx);
-    if ($('chart')) renderChart(dailyProfile(hist, M, D, ctx.thr, 30), r, eventDate);   // graphique retiré de la page (23.10.2026)
+    // Graphique désactivé : il demande ±30 jours, alors que fetchHistory ne télécharge que ±WINDOW_DAYS.
+    if (false && $('chart')) renderChart(dailyProfile(hist, M, D, ctx.thr, 30), r, eventDate);   // graphique retiré de la page (23.10.2026)
     // Le résumé (lieu, date, nombre de jours de pluie, prévision) ira sur la page de détails :
     // T.summary(where, dayLabel(eventDate), h, k, n) + T.fcNote(...)
     status.textContent = '';
