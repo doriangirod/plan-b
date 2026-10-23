@@ -53,6 +53,11 @@
   <section class="container" aria-label="Calculateur de risque">
     <div class="tool" id="tool">
       <form id="f" novalidate>
+        <div class="consent full">
+          <input id="ok" type="checkbox" required>
+          <label for="ok">Je comprends que Plan B est un <strong>outil de test, uniquement indicatif</strong>. Il ne prend aucune décision à ma place et ses résultats peuvent être erronés. Je reste <strong>responsable à 100 %</strong> de mes décisions, y compris celles que je prends grâce à cet outil, et son auteur décline toute responsabilité.</label>
+        </div>
+        <fieldset id="fs" class="fs" disabled>
         <div class="field full">
           <label for="place">Où</label>
           <input id="place" placeholder="ex. Zurich" autocomplete="off" required>
@@ -81,6 +86,7 @@
           <small>Seuil journalier.</small>
         </div>
         <button id="go" type="submit">Évaluer mon événement</button>
+        </fieldset>
       </form>
 
       <div class="result empty" id="result">

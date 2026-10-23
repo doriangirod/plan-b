@@ -137,3 +137,11 @@ h2.section{margin:0;font-size:clamp(1.6rem,3vw,2rem);font-weight:800;letter-spac
 .site-footer .container{display:flex;justify-content:space-between;gap:8px 24px;flex-wrap:wrap;padding-top:18px;
   padding-bottom:max(18px,env(safe-area-inset-bottom,0px));font-size:.82rem;color:var(--muted)}
 .site-footer p{margin:0}
+
+/* Décharge de responsabilité : à cocher avant de pouvoir saisir (23.10.2026) */
+.consent{grid-column:1/-1;display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;
+  background:var(--warn-soft);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:.84rem;line-height:1.45}
+.consent input{width:20px;height:20px;min-height:0;margin:1px 0 0;padding:0;accent-color:var(--accent);cursor:pointer}
+.consent label{cursor:pointer}
+.fs{display:contents;border:0;margin:0;padding:0;min-width:0}
+.fs[disabled] .field,.fs[disabled] button{opacity:.45}

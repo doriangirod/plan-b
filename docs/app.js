@@ -294,6 +294,7 @@ function showEmpty() {
 }
 async function run(ev) {
   if (ev) ev.preventDefault();
+  if (!$('ok').checked) return; // décharge de responsabilité non acceptée
   const status = $('status'), btn = $('go'), figs = document.querySelector('.figs');
   const ctx = {
     place: $('place').value.trim(), date: $('date').value,
@@ -338,6 +339,8 @@ async function run(ev) {
   }
 }
 
+$('ok').checked = false;
+$('ok').addEventListener('change', () => { $('fs').disabled = !$('ok').checked; });
 $('f').addEventListener('submit', run);
 $('place').addEventListener('input', resetPlace);
 $('date').value = iso(todayUTC());   // date du jour par défaut ; aucun calcul tant que l'utilisateur n'a pas validé

@@ -53,6 +53,11 @@
   <section class="container" aria-label="Risk calculator">
     <div class="tool" id="tool">
       <form id="f" novalidate>
+        <div class="consent full">
+          <input id="ok" type="checkbox" required>
+          <label for="ok">I understand that Plan B is an <strong>experimental, advisory-only tool</strong>. It does not make decisions for me and its results may be wrong. I remain <strong>100% responsible</strong> for my decisions, including those I take based on this tool, and its author accepts no liability whatsoever.</label>
+        </div>
+        <fieldset id="fs" class="fs" disabled>
         <div class="field full">
           <label for="place">Where</label>
           <input id="place" placeholder="e.g. Zurich" autocomplete="off" required>
@@ -81,6 +86,7 @@
           <small>Daily threshold.</small>
         </div>
         <button id="go" type="submit">Check my event</button>
+        </fieldset>
       </form>
 
       <div class="result empty" id="result">
