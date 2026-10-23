@@ -71,6 +71,10 @@ form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-c
 .placeinfo a{color:var(--accent);font-weight:600;white-space:nowrap}
 input{font:inherit;font-size:.95rem;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;
   padding:10px 12px;min-height:44px;width:100%;min-width:0}
+/* Safari iOS : la case de date garde une largeur minimale native et déborde ; on la neutralise. */
+input[type="date"]{-webkit-appearance:none;appearance:none;display:block;max-width:100%;min-width:0;text-align:left}
+input[type="date"]::-webkit-date-and-time-value{text-align:left;margin:0}
+input[type="date"]::-webkit-calendar-picker-indicator{margin-left:auto}
 input:focus-visible{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent)}
 .unit{position:relative}
 .unit input{padding-right:48px;font-family:var(--f-data);font-size:.9rem;font-variant-numeric:tabular-nums}
