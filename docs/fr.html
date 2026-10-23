@@ -3,96 +3,119 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Plan B - Weather Risk</title>
-<meta name="description" content="Probabilité de pluie, perte attendue et décision claire : protéger ou non votre événement en plein air.">
-<meta property="og:title" content="Plan B - Weather Risk">
+<title>Plan B — Le risque météo pour vos événements en plein air</title>
+<meta name="description" content="Faut-il payer une tente, une salle de repli ou une assurance pluie ? 30 ans de données météo et la prévision du moment vous donnent une réponse claire en CHF.">
+<meta property="og:title" content="Plan B — Pluie ou soleil, décidez avec des chiffres">
 <meta property="og:description" content="Faut-il payer une tente ou une assurance pluie ? 30 ans de données météo et la prévision du moment vous donnent la réponse en CHF.">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌧️</text></svg>">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#10202c">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2310202c'/%3E%3Ctext x='13' y='46' font-family='Arial,sans-serif' font-weight='800' font-size='38' fill='%23ffffff'%3EB%3C/text%3E%3Ccircle cx='48' cy='43' r='5' fill='%236cb8ec'/%3E%3C/svg%3E">
 <link rel="alternate" hreflang="en" href="index.html">
 <link rel="alternate" hreflang="fr" href="fr.html">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,600&display=swap">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="style.css?v=2026-10-23d">
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div class="topbar">
-      <span class="eyebrow">Risque météo · événements en plein air</span>
-      <nav class="lang" aria-label="Langue">
-        <a href="index.html" lang="en">EN</a>
-        <a href="fr.html" lang="fr" aria-current="page">FR</a>
-      </nav>
-    </div>
-    <h1 class="brand">Plan B - Weather Risk</h1>
-    <p class="lede">Indiquez le lieu, la date et ce que la pluie vous coûterait. L'outil estime la probabilité de pluie à partir de 30 ans de données et de la prévision du moment, puis vous dit si une protection vaut son prix.</p>
-  </header>
-
-  <div class="top">
-    <form id="f" novalidate>
-      <div class="field">
-        <label for="place">Lieu</label>
-        <input id="place" value="Zurich" autocomplete="off" required>
-        <small>Nom de la commune, sans le pays.</small>
-      </div>
-      <div class="field">
-        <label for="date">Date de l'événement</label>
-        <input id="date" type="date" required>
-      </div>
-      <div class="field">
-        <label for="rev">Recette attendue</label>
-        <div class="unit"><input id="rev" type="number" min="0" step="500" value="20000"><span>CHF</span></div>
-      </div>
-      <div class="row2">
-        <div class="field">
-          <label for="lam">Perte si pluie</label>
-          <div class="unit"><input id="lam" type="number" min="0" max="100" step="5" value="60"><span>%</span></div>
-        </div>
-        <div class="field">
-          <label for="thr">Seuil de pluie</label>
-          <div class="unit"><input id="thr" type="number" min="0.1" step="0.5" value="2"><span>mm</span></div>
-        </div>
-      </div>
-      <div class="field">
-        <label for="cost">Coût de la protection</label>
-        <div class="unit"><input id="cost" type="number" min="0" step="100" value="2500"><span>CHF</span></div>
-        <small>Tente, salle de repli ou assurance annulation.</small>
-      </div>
-      <button id="go" type="submit">Évaluer le risque</button>
-    </form>
-
-    <div class="result">
-      <div class="verdict" id="verdict">
-        <span class="tag" id="vtag">—</span>
-        <h2 id="vtitle">Évaluation en cours</h2>
-        <p id="vtext"></p>
-        <div class="status" id="status" role="status">Chargement de l'exemple…</div>
-      </div>
-      <div class="figs">
-        <div class="fig"><span class="k">Probabilité de pluie</span><span class="v" id="fp">—</span><span class="s" id="fps"></span></div>
-        <div class="fig"><span class="k">Perte si pluie</span><span class="v" id="fl">—</span><span class="s" id="fls"></span></div>
-        <div class="fig"><span class="k">Perte attendue</span><span class="v" id="fe">—</span><span class="s" id="fes"></span></div>
-        <div class="fig"><span class="k">Seuil de décision</span><span class="v" id="fs">—</span><span class="s" id="fss"></span></div>
-      </div>
-      <section class="card chartcard">
-        <h3>Fréquence historique de pluie autour de la date</h3>
-        <div class="legend">
-          <span><i style="border-color:var(--ink)"></i>probabilité retenue</span>
-          <span><i style="border-color:var(--bad);border-top-style:dashed"></i>seuil de décision</span>
-          <span>Zone claire : fenêtre utilisée pour le calcul</span>
-        </div>
-        <div class="chartbox"><svg id="chart" viewBox="0 0 760 140" role="img" aria-label="Fréquence de pluie par jour autour de la date de l'événement"></svg></div>
-      </section>
-    </div>
+<header class="site-header">
+  <div class="container">
+    <a class="logo" href="fr.html" aria-label="Plan B, accueil">Plan B<span>.</span></a>
+    <nav class="nav" aria-label="Navigation principale">
+      <a class="hide-sm" href="#how">Comment ça marche</a>
+      <a class="hide-sm" href="rain-model.pdf" target="_blank" rel="noopener">Méthodologie</a>
+      <a class="hide-sm" href="#about">À propos</a>
+      <a class="lang" href="index.html" lang="en" hreflang="en">EN</a>
+    </nav>
   </div>
+</header>
 
+<main>
+  <section class="container hero">
+    <span class="pill">Pour les festivals, mariages, marchés et manifestations sportives</span>
+    <h1>Pluie ou soleil, décidez avec des chiffres.</h1>
+    <p>30 ans de données météo et la prévision vous disent si une tente ou une assurance pluie vaut son prix.</p>
+  </section>
 
-  <footer>
-    <p>Données météo : <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (réanalyse ERA5 et modèles de prévision). Outil d'aide à la décision, sans garantie.</p>
-    <a class="docbtn" href="rain-model.pdf" target="_blank" rel="noopener">📄 Méthodologie (PDF, en anglais)</a>
-  </footer>
-</div>
-<script src="app.js"></script>
+  <section class="container" aria-label="Calculateur de risque">
+    <div class="tool" id="tool">
+      <form id="f" novalidate>
+        <div class="field full">
+          <label for="place">Où</label>
+          <input id="place" value="Zurich" autocomplete="off" required>
+          <small id="placeinfo" class="placeinfo" aria-live="polite">Nom de la commune ou code postal.</small>
+        </div>
+        <div class="field full">
+          <label for="date">Quand</label>
+          <input id="date" type="date" required>
+        </div>
+        <div class="field">
+          <label for="rev">Recette attendue</label>
+          <div class="unit"><input id="rev" type="number" min="0" step="500" value="20000" inputmode="numeric"><span>CHF</span></div>
+        </div>
+        <div class="field">
+          <label for="cost">Coût de la protection</label>
+          <div class="unit"><input id="cost" type="number" min="0" step="100" value="2500" inputmode="numeric"><span>CHF</span></div>
+        </div>
+        <div class="field">
+          <label for="lam">Perte s'il pleut</label>
+          <div class="unit"><input id="lam" type="number" min="0" max="100" step="5" value="60" inputmode="numeric"><span>%</span></div>
+          <small>Part de la recette perdue.</small>
+        </div>
+        <div class="field">
+          <label for="thr">Pluie dès</label>
+          <div class="unit"><input id="thr" type="number" min="0.1" step="0.5" value="2" inputmode="decimal"><span>mm</span></div>
+          <small>Seuil journalier.</small>
+        </div>
+        <button id="go" type="submit">Évaluer mon événement</button>
+      </form>
+
+      <div class="result">
+        <div class="verdict" id="verdict" aria-live="polite">
+          <span class="tag" id="vtag">—</span>
+          <h2 id="vtitle">Calcul en cours</h2>
+          <p id="vtext"></p>
+          <div class="status" id="status" role="status">Chargement de l'exemple…</div>
+        </div>
+        <div class="figs">
+          <div class="fig"><span class="k">Risque de pluie</span><span class="v" id="fp">—</span><span class="s" id="fps"></span></div>
+          <div class="fig"><span class="k">Perte s'il pleut</span><span class="v" id="fl">—</span><span class="s" id="fls"></span></div>
+          <div class="fig"><span class="k">Perte attendue</span><span class="v" id="fe">—</span><span class="s" id="fes"></span></div>
+          <div class="fig"><span class="k">Seuil de rentabilité</span><span class="v" id="fs">—</span><span class="s" id="fss"></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container how" id="how">
+    <h2 class="section">Comment ça marche</h2>
+    <ol class="steps">
+      <li><span class="n">01</span><h3>30 ans d'historique</h3><p>Nous comptons combien de fois il a plu à votre lieu dans la semaine autour de votre date, chacune des 30 dernières années.</p></li>
+      <li><span class="n">02</span><h3>Combiné avec la prévision</h3><p>À moins de 16 jours de l'événement, la prévision du moment prend progressivement le relais de l'historique.</p></li>
+      <li><span class="n">03</span><h3>Une décision claire</h3><p>Nous comparons votre perte attendue au prix de la protection, incertitude comprise : protéger, ne pas protéger, ou décision serrée.</p></li>
+    </ol>
+  </section>
+
+  <section class="container about" id="about">
+    <div class="band">
+      <div class="band-text">
+        <h2>Une méthode transparente, expliquée pas à pas.</h2>
+        <p>Plan B est développé par Dorian Girod, étudiant en Master de statistique à l'ETH Zurich. Les données, les formules et leurs limites sont présentées dans une courte note méthodologique.</p>
+      </div>
+      <div class="actions">
+        <a class="btn light" href="rain-model.pdf" target="_blank" rel="noopener">Lire la méthodologie (en anglais)</a>
+        <a class="btn ghost" href="https://github.com/doriangirod/plan-b" target="_blank" rel="noopener">Code source sur GitHub</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p>© 2026 Plan B · Données météo : <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (réanalyse ERA5 et modèles de prévision)</p>
+    <p>Outil d'aide à la décision, fourni sans garantie.</p>
+  </div>
+</footer>
+<script src="app.js?v=2026-10-23e"></script>
 </body>
 </html>

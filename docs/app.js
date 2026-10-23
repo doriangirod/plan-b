@@ -20,7 +20,7 @@ const T = {
     netErr: w => `Impossible de joindre le service météo (${w}). Vérifiez la connexion.`,
     httpErr: (w, c) => `Le service météo a refusé la requête (${w}, code ${c}).`,
     wGeo: 'recherche du lieu', wHist: 'historique', wFc: 'prévision',
-    notFound: n => `Lieu introuvable : « ${n} ». Essayez le nom d'une commune, sans le pays.`,
+    notFound: n => `Lieu introuvable : « ${n} ». Essayez une autre orthographe ou un code postal.`,
     needPlace: 'Indiquez un lieu et une date.',
     badNums: 'Vérifiez les montants : recette et perte doivent être positives, la perte au plus 100 %.',
     past: 'La date est passée. Choisissez une date à venir.',
@@ -37,17 +37,17 @@ const T = {
     close: (lo, hi, ps, lean) => ['Décision serrée', 'Le seuil est dans la marge d\'incertitude',
       `La probabilité se situe entre ${lo} et ${hi}, et le seuil de rentabilité est de ${ps}. Le calcul ${lean}, mais l'écart n'est pas significatif.`],
     range: (lo, hi) => `${lo} à ${hi}`,
-    fcWeight: w => ` · prévision ${w} %`, climOnly: ' · climatologie',
     ofRev: (l, r) => `${l} % de ${r}`,
     protCost: c => `protection : ${c}`,
     never: 'jamais rentable', above: 'protéger au-delà',
-    day0: 'J · '
+    day0: 'J · ',
+    placeHint: 'Nom de la commune ou code postal.', map: 'Voir sur la carte', west: 'O', postcode: 'NPA'
   },
   en: {
     netErr: w => `Could not reach the weather service (${w}). Check your connection.`,
     httpErr: (w, c) => `The weather service rejected the request (${w}, code ${c}).`,
     wGeo: 'location search', wHist: 'history', wFc: 'forecast',
-    notFound: n => `Location not found: "${n}". Try a town name without the country.`,
+    notFound: n => `Location not found: "${n}". Try another spelling or a postcode.`,
     needPlace: 'Enter a location and a date.',
     badNums: 'Check the amounts: revenue and loss must be positive, and the loss at most 100%.',
     past: 'That date has passed. Pick a future date.',
@@ -64,11 +64,11 @@ const T = {
     close: (lo, hi, ps, lean) => ['Close call', 'The threshold is within the uncertainty',
       `The probability lies between ${lo} and ${hi}, and the break-even threshold is ${ps}. The estimate ${lean}, but the gap is not significant.`],
     range: (lo, hi) => `${lo} to ${hi}`,
-    fcWeight: w => ` · forecast ${w}%`, climOnly: ' · climatology',
     ofRev: (l, r) => `${l}% of ${r}`,
     protCost: c => `protection: ${c}`,
     never: 'never pays off', above: 'protect above this',
-    day0: 'D · '
+    day0: 'D · ',
+    placeHint: 'Town name or postcode.', map: 'View on map', west: 'W', postcode: 'Postcode'
   }
 }[LANG];
 
@@ -189,7 +189,7 @@ function renderVerdict(r, ctx) {
   $('vtag').textContent = tag; $('vtitle').textContent = title; $('vtext').textContent = text;
 
   $('fp').textContent = pct(r.p);
-  $('fps').textContent = T.range(pct(r.pLo), pct(r.pHi)) + (r.w > 0 ? T.fcWeight(Math.round(100 * r.w)) : T.climOnly);
+  $('fps').textContent = T.range(pct(r.pLo), pct(r.pHi));   // le poids de la prévision n'est plus affiché (détails : note méthodologique)
   $('fl').textContent = chf(r.loss);
   $('fls').textContent = T.ofRev(Math.round(ctx.lambda * 100), chf(ctx.R));
   $('fe').textContent = chf(r.EL);
@@ -231,6 +231,41 @@ function renderChart(profile, r, eventDate) {
   svg.innerHTML = s;
 }
 
+// Lieu trouvé, affiché sous le champ « Où » pour que l'utilisateur vérifie que c'est le bon.
+// Les noms viennent d'Open-Meteo : on les insère comme texte (textContent), jamais comme HTML.
+function postcodeLabel(pcs) {
+  if (!pcs || !pcs.length) return '';
+  if (pcs.length === 1) return pcs[0];
+  if (pcs.every(c => /^\d+$/.test(c))) {
+    const s = [...pcs].sort((a, b) => Number(a) - Number(b));
+    return `${s[0]}–${s[s.length - 1]}`;
+  }
+  return pcs[0];
+}
+const coordLabel = (la, lo) =>
+  `${Math.abs(la).toFixed(2)}° ${la >= 0 ? 'N' : 'S'}, ${Math.abs(lo).toFixed(2)}° ${lo >= 0 ? 'E' : T.west}`;
+
+function renderPlace(loc) {
+  const el = $('placeinfo');
+  const parts = [loc.name];
+  [loc.admin1, loc.country].forEach(x => { if (x && !parts.includes(x)) parts.push(x); });
+  const where = document.createElement('span');
+  where.className = 'where'; where.textContent = parts.join(', ');
+  const pc = postcodeLabel(loc.postcodes);
+  const details = document.createElement('span');
+  details.className = 'details';
+  details.textContent = (pc ? T.postcode + ' ' + pc + ' · ' : '') + coordLabel(loc.latitude, loc.longitude) + ' · ';
+  const a = document.createElement('a');
+  a.href = `https://www.openstreetmap.org/?mlat=${loc.latitude}&mlon=${loc.longitude}#map=12/${loc.latitude}/${loc.longitude}`;
+  a.target = '_blank'; a.rel = 'noopener'; a.textContent = T.map;
+  details.append(a);
+  el.replaceChildren(where, details); el.classList.add('found');
+}
+function resetPlace() {
+  const el = $('placeinfo');
+  el.textContent = T.placeHint; el.classList.remove('found');
+}
+
 // ---------- Orchestration ----------
 async function run(ev) {
   if (ev) ev.preventDefault();
@@ -248,9 +283,11 @@ async function run(ev) {
   if (h < 0) return fail(T.past);
 
   btn.disabled = true; figs.classList.add('dim');
+  let loc = null;
   try {
     status.textContent = T.locating;
-    const loc = await geocode(ctx.place);
+    loc = await geocode(ctx.place);
+    renderPlace(loc);
     status.textContent = T.reading(N_YEARS, loc.name);
     const [hist, fc] = await Promise.all([
       fetchHistory(loc.latitude, loc.longitude),
@@ -261,11 +298,12 @@ async function run(ev) {
     if (n < 30) throw new Error(T.noData);
     const r = computeRisk({ k, n, pf: fc ? fc.pf : null, h, R: ctx.R, lambda: ctx.lambda, C: ctx.C });
     renderVerdict(r, ctx);
-    renderChart(dailyProfile(hist, M, D, ctx.thr, 30), r, eventDate);
+    if ($('chart')) renderChart(dailyProfile(hist, M, D, ctx.thr, 30), r, eventDate);   // graphique retiré de la page (23.10.2026)
     // Le résumé (lieu, date, nombre de jours de pluie, prévision) ira sur la page de détails :
     // T.summary(where, dayLabel(eventDate), h, k, n) + T.fcNote(...)
     status.textContent = '';
   } catch (e) {
+    if (!loc) resetPlace();
     fail(e.message);
   } finally {
     btn.disabled = false; figs.classList.remove('dim');
@@ -273,5 +311,6 @@ async function run(ev) {
 }
 
 $('f').addEventListener('submit', run);
+$('place').addEventListener('input', resetPlace);
 $('date').value = iso(addDays(todayUTC(), 10));   // exemple : événement dans 10 jours
 run();
