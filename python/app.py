@@ -1,6 +1,6 @@
 """
 Plan B - Weather Risk — interface Streamlit (FR / EN).
-Lancer en local :  streamlit run app.py
+Lancer en local (depuis le dossier python/) :  streamlit run app.py
 Le calcul est dans model.py.
 """
 from datetime import date, timedelta
