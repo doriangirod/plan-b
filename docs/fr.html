@@ -28,7 +28,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap">
-<link rel="stylesheet" href="style.css?v=2026-10-23g">
+<link rel="stylesheet" href="style.css?v=2026-10-23h">
 </head>
 <body>
 <header class="site-header">
@@ -55,7 +55,7 @@
       <form id="f" novalidate>
         <div class="field full">
           <label for="place">Où</label>
-          <input id="place" value="Zurich" autocomplete="off" required>
+          <input id="place" placeholder="ex. Zurich" autocomplete="off" required>
           <small id="placeinfo" class="placeinfo" aria-live="polite">Nom de la commune ou code postal.</small>
         </div>
         <div class="field full">
@@ -64,31 +64,31 @@
         </div>
         <div class="field">
           <label for="rev">Recette attendue</label>
-          <div class="unit"><input id="rev" type="number" min="0" step="500" value="20000" inputmode="numeric"><span>CHF</span></div>
+          <div class="unit"><input id="rev" type="number" min="0" step="500" placeholder="ex. 20000" inputmode="numeric" required><span>CHF</span></div>
         </div>
         <div class="field">
           <label for="cost">Coût de la protection</label>
-          <div class="unit"><input id="cost" type="number" min="0" step="100" value="2500" inputmode="numeric"><span>CHF</span></div>
+          <div class="unit"><input id="cost" type="number" min="0" step="100" placeholder="ex. 2500" inputmode="numeric" required><span>CHF</span></div>
         </div>
         <div class="field">
           <label for="lam">Perte s'il pleut</label>
-          <div class="unit"><input id="lam" type="number" min="0" max="100" step="5" value="60" inputmode="numeric"><span>%</span></div>
+          <div class="unit"><input id="lam" type="number" min="0" max="100" step="5" placeholder="ex. 60" inputmode="numeric" required><span>%</span></div>
           <small>Part de la recette perdue.</small>
         </div>
         <div class="field">
           <label for="thr">Pluie dès</label>
-          <div class="unit"><input id="thr" type="number" min="0.1" step="0.5" value="2" inputmode="decimal"><span>mm</span></div>
+          <div class="unit"><input id="thr" type="number" min="0.1" step="0.5" placeholder="ex. 2" inputmode="decimal" required><span>mm</span></div>
           <small>Seuil journalier.</small>
         </div>
         <button id="go" type="submit">Évaluer mon événement</button>
       </form>
 
-      <div class="result">
+      <div class="result empty" id="result">
         <div class="verdict" id="verdict" aria-live="polite">
           <span class="tag" id="vtag">—</span>
-          <h2 id="vtitle">Calcul en cours</h2>
-          <p id="vtext"></p>
-          <div class="status" id="status" role="status">Chargement de l'exemple…</div>
+          <h2 id="vtitle">Votre résultat s’affichera ici</h2>
+          <p id="vtext">Remplissez les informations sur votre événement, puis cliquez sur « Évaluer mon événement ».</p>
+          <div class="status" id="status" role="status"></div>
         </div>
         <div class="figs">
           <div class="fig"><span class="k">Risque de pluie</span><span class="v" id="fp">—</span><span class="s" id="fps"></span></div>
@@ -129,6 +129,6 @@
     <p>Outil d'aide à la décision, fourni sans garantie.</p>
   </div>
 </footer>
-<script src="app.js?v=2026-10-23f"></script>
+<script src="app.js?v=2026-10-23h"></script>
 </body>
 </html>

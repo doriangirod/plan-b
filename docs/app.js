@@ -22,6 +22,7 @@ const T = {
     wGeo: 'recherche du lieu', wHist: 'historique', wFc: 'prévision',
     notFound: n => `Lieu introuvable : « ${n} ». Essayez une autre orthographe ou un code postal.`,
     needPlace: 'Indiquez un lieu et une date.',
+    needAll: 'Remplissez tous les champs : recette, coût de la protection, perte et seuil de pluie.',
     badNums: 'Vérifiez les montants : recette et perte doivent être positives, la perte au plus 100 %.',
     past: 'La date est passée. Choisissez une date à venir.',
     locating: 'Recherche du lieu…',
@@ -50,6 +51,7 @@ const T = {
     wGeo: 'location search', wHist: 'history', wFc: 'forecast',
     notFound: n => `Location not found: "${n}". Try another spelling or a postcode.`,
     needPlace: 'Enter a location and a date.',
+    needAll: 'Fill in all the fields: revenue, cost of protection, loss and rain threshold.',
     badNums: 'Check the amounts: revenue and loss must be positive, and the loss at most 100%.',
     past: 'That date has passed. Pick a future date.',
     locating: 'Finding the location…',
@@ -283,6 +285,13 @@ function resetPlace() {
 }
 
 // ---------- Orchestration ----------
+// Panneau de résultat vide (avant le premier calcul, ou après une erreur) : on reprend les textes du HTML.
+const EMPTY = { title: $('vtitle').textContent, text: $('vtext').textContent };
+function showEmpty() {
+  $('result').classList.add('empty');
+  $('verdict').className = 'verdict';
+  $('vtitle').textContent = EMPTY.title; $('vtext').textContent = EMPTY.text;
+}
 async function run(ev) {
   if (ev) ev.preventDefault();
   const status = $('status'), btn = $('go'), figs = document.querySelector('.figs');
@@ -290,9 +299,10 @@ async function run(ev) {
     place: $('place').value.trim(), date: $('date').value,
     R: +$('rev').value, lambda: +$('lam').value / 100, C: +$('cost').value, thr: +$('thr').value
   };
-  const fail = msg => { status.className = 'status err'; status.textContent = msg; };
+  const fail = msg => { showEmpty(); status.className = 'status err'; status.textContent = msg; };
   status.className = 'status';
   if (!ctx.place || !ctx.date) return fail(T.needPlace);
+  if (['rev', 'cost', 'lam', 'thr'].some(id => $(id).value.trim() === '')) return fail(T.needAll);
   if (!(ctx.R > 0) || !(ctx.lambda > 0) || ctx.lambda > 1 || !(ctx.C >= 0) || !(ctx.thr > 0)) return fail(T.badNums);
   const eventDate = parseISO(ctx.date);
   const h = Math.round((eventDate - todayUTC()) / 86400000);
@@ -314,6 +324,7 @@ async function run(ev) {
     if (n < 30) throw new Error(T.noData);
     const r = computeRisk({ k, n, pf: fc ? fc.pf : null, h, R: ctx.R, lambda: ctx.lambda, C: ctx.C });
     renderVerdict(r, ctx);
+    $('result').classList.remove('empty');
     // Graphique désactivé : il demande ±30 jours, alors que fetchHistory ne télécharge que ±WINDOW_DAYS.
     if (false && $('chart')) renderChart(dailyProfile(hist, M, D, ctx.thr, 30), r, eventDate);   // graphique retiré de la page (23.10.2026)
     // Le résumé (lieu, date, nombre de jours de pluie, prévision) ira sur la page de détails :
@@ -329,5 +340,4 @@ async function run(ev) {
 
 $('f').addEventListener('submit', run);
 $('place').addEventListener('input', resetPlace);
-$('date').value = iso(addDays(todayUTC(), 10));   // exemple : événement dans 10 jours
-run();
+$('date').value = iso(todayUTC());   // date du jour par défaut ; aucun calcul tant que l'utilisateur n'a pas validé

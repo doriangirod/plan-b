@@ -103,6 +103,10 @@ button[disabled]{opacity:.6;cursor:progress}
 
 @media (prefers-reduced-motion:no-preference){.verdict,.figs{transition:opacity .2s}}
 .dim{opacity:.45}
+/* Avant le premier calcul : seulement le titre d'invitation, pas d'étiquette ni de chiffres */
+.result.empty .tag,.result.empty .figs{display:none}
+.result.empty .verdict h2{color:var(--muted)}
+input::placeholder{color:var(--muted);opacity:.6}
 
 /* ---------- Comment ça marche ---------- */
 .how{padding-top:72px;padding-bottom:16px;display:grid;gap:24px;scroll-margin-top:16px}
