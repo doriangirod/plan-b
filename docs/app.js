@@ -7,7 +7,7 @@
 const WINDOW_DAYS = 7;      // demi-largeur de la fenêtre climatologique
 const N_YEARS = 30;         // années d'historique
 const FORECAST_DAYS = 16;   // horizon max de la prévision Open-Meteo
-const Z = 1.96;             // quantile pour l'intervalle à 95 %
+const Z = 1.959964;         // quantile normal 0.975 (sert au calcul du quantile de Student)
 
 const Y1 = new Date().getFullYear() - 1;   // dernière année complète
 const Y0 = Y1 - N_YEARS + 1;
@@ -140,18 +140,21 @@ async function fetchForecast(lat, lon, dateStr) {
 }
 
 // ---------- Statistiques ----------
-// Compte les jours de pluie (>= seuil) dans la fenêtre ±W autour du même jour calendaire, chaque année.
+// Pour chaque année y, compte les jours de pluie (>= seuil) dans la fenêtre W_y = ±W jours autour du
+// même jour calendaire. Renvoie [{k, n}, ...] (une entrée par année ayant des données) — note, éq. (2).
 function climatology(hist, month, day, thr, W) {
-  let k = 0, n = 0;
+  const years = [];
   for (let y = Y0; y <= Y1; y++) {
     const c = new Date(Date.UTC(y, month, day));
+    let k = 0, n = 0;
     for (let o = -W; o <= W; o++) {
       const v = hist.get(iso(addDays(c, o)));
       if (v === undefined) continue;
       n++; if (v >= thr) k++;
     }
+    if (n > 0) years.push({ k, n });
   }
-  return { k, n };
+  return years;
 }
 
 // Fréquence de pluie jour par jour (sur 30 ans) pour le graphique.
@@ -169,32 +172,46 @@ function dailyProfile(hist, month, day, thr, span) {
   return out;
 }
 
-function wilson(k, n, z) {
-  const p = k / n, z2 = z * z, den = 1 + z2 / n;
-  const centre = (p + z2 / (2 * n)) / den;
-  const half = (z / den) * Math.sqrt(p * (1 - p) / n + z2 / (4 * n * n));
-  return [Math.max(0, centre - half), Math.min(1, centre + half)];
+// Quantile de la loi de Student à nu degrés de liberté (développement de Cornish-Fisher,
+// erreur < 1e-4 pour nu >= 5). Pour nu = 29 : 2.0452.
+function tQuantile(nu, z = Z) {
+  const g1 = (z ** 3 + z) / 4;
+  const g2 = (5 * z ** 5 + 16 * z ** 3 + 3 * z) / 96;
+  const g3 = (3 * z ** 7 + 19 * z ** 5 + 17 * z ** 3 - 15 * z) / 384;
+  const g4 = (79 * z ** 9 + 776 * z ** 7 + 1482 * z ** 5 - 1920 * z ** 3 - 945 * z) / 92160;
+  return z + g1 / nu + g2 / nu ** 2 + g3 / nu ** 3 + g4 / nu ** 4;
+}
+
+// L'année comme unité (note, éq. (2), (3), (5)) : p_y = k_y / n_y ; p_hat = moyenne des p_y ;
+// s² = (1/(Y-1)) Σ (p_y - p_hat)² ; IC 95 % = p_hat ± t_{Y-1; 0.975} · s / √Y, intersecté avec [0, 1].
+function yearInterval(years) {
+  const py = years.map(({ k, n }) => k / n);
+  const Y = py.length;
+  const pHat = py.reduce((a, b) => a + b, 0) / Y;
+  const s2 = py.reduce((a, p) => a + (p - pHat) ** 2, 0) / (Y - 1);
+  const half = tQuantile(Y - 1) * Math.sqrt(s2 / Y);
+  return { pHat, lo: Math.max(0, pHat - half), hi: Math.min(1, pHat + half), s: Math.sqrt(s2), Y };
 }
 
 // ================= MODÈLE (ta partie : c'est ici que tu modifies les maths) =================
-function computeRisk({ k, n, pf, h, R, lambda, C }) {
-  const pc = k / n;                                   // climatologie
-  const [lo, hi] = wilson(k, n, Z);
+// Même calcul que compute_risk dans python/model.py.
+function computeRisk({ years, pf, h, R, lambda, C }) {
+  const { pHat: pc, lo, hi, s, Y } = yearInterval(years);   // climatologie, éq. (3) et (5)
   const w = pf == null ? 0 : Math.max(0, 1 - h / FORECAST_DAYS);   // poids de la prévision
-  const p = w * pf + (1 - w) * pc;
-  const pLo = w * (pf ?? 0) + (1 - w) * lo;
+  const p = w * pf + (1 - w) * pc;                  // éq. (6)
+  const pLo = w * (pf ?? 0) + (1 - w) * lo;         // éq. (7)
   const pHi = w * (pf ?? 0) + (1 - w) * hi;
 
   const loss = lambda * R;                            // perte si pluie
-  const EL = p * loss;                                // perte attendue
-  const pStar = loss > 0 ? C / loss : Infinity;       // seuil de décision
+  const EL = p * loss;                                // perte attendue, éq. (9)
+  const pStar = loss > 0 ? C / loss : Infinity;       // seuil de décision, éq. (11)
 
-  let decision;
+  let decision;                                      // éq. (12)
   if (pLo > pStar) decision = 'protect';
   else if (pHi < pStar) decision = 'skip';
   else decision = 'close';
 
-  return { pc, lo, hi, w, p, pLo, pHi, loss, EL, pStar, decision };
+  return { pc, lo, hi, s, Y, w, p, pLo, pHi, loss, EL, pStar, decision };
 }
 // ===========================================================================================
 
@@ -321,9 +338,10 @@ async function run(ev) {
       fetchHistory(loc.latitude, loc.longitude, M, D),
       h < FORECAST_DAYS ? fetchForecast(loc.latitude, loc.longitude, ctx.date).catch(() => null) : Promise.resolve(null)
     ]);
-    const { k, n } = climatology(hist, M, D, ctx.thr, WINDOW_DAYS);
-    if (n < 30) throw new Error(T.noData);
-    const r = computeRisk({ k, n, pf: fc ? fc.pf : null, h, R: ctx.R, lambda: ctx.lambda, C: ctx.C });
+    const years = climatology(hist, M, D, ctx.thr, WINDOW_DAYS);
+    const n = years.reduce((a, y) => a + y.n, 0);
+    if (n < 30 || years.length < 10) throw new Error(T.noData);
+    const r = computeRisk({ years, pf: fc ? fc.pf : null, h, R: ctx.R, lambda: ctx.lambda, C: ctx.C });
     renderVerdict(r, ctx);
     $('result').classList.remove('empty');
     // Graphique désactivé : il demande ±30 jours, alors que fetchHistory ne télécharge que ±WINDOW_DAYS.
@@ -340,7 +358,7 @@ async function run(ev) {
 }
 
 $('ok').checked = false;
-$('ok').addEventListener('change', () => { $('fs').disabled = !$('ok').checked; });
+$('ok').addEventListener('change', () => { $('fields').disabled = !$('ok').checked; });
 $('f').addEventListener('submit', run);
 $('place').addEventListener('input', resetPlace);
 $('date').value = iso(todayUTC());   // date du jour par défaut ; aucun calcul tant que l'utilisateur n'a pas validé

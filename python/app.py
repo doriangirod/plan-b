@@ -216,11 +216,12 @@ with right:
         st.error(T["net"])
         st.stop()
 
-    k, n = model.climatology(hist, ev_date.month, ev_date.day, thr, YEARS)
-    if n < 30:
+    years = model.climatology(hist, ev_date.month, ev_date.day, thr, YEARS)
+    k, n = sum(ky for ky, _ in years), sum(ny for _, ny in years)
+    if n < 30 or len(years) < 10:
         st.error(T["no_data"])
         st.stop()
-    r = model.compute_risk(k, n, pf, h, R, lam / 100, C)
+    r = model.compute_risk(years, pf, h, R, lam / 100, C)
 
     where = ", ".join(x for x in [loc.get("name"), loc.get("admin1"), loc.get("country")] if x)
     st.caption(T["summary"].format(where, day_label(ev_date), h, k, n)
