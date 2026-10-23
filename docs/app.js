@@ -340,7 +340,7 @@ async function run(ev) {
 }
 
 $('ok').checked = false;
-$('ok').addEventListener('change', () => { $('fs').disabled = !$('ok').checked; });
+$('ok').addEventListener('change', () => { $('fields').disabled = !$('ok').checked; });
 $('f').addEventListener('submit', run);
 $('place').addEventListener('input', resetPlace);
 $('date').value = iso(todayUTC());   // date du jour par défaut ; aucun calcul tant que l'utilisateur n'a pas validé
